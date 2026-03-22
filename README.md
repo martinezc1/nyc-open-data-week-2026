@@ -10,14 +10,14 @@ Students used real NYC Open Data datasets, the [nycOpenData](https://martinezc1.
 
 ## 👥 Student Presenters
 
--   Crystal Adote\
--   Jonah Dratfield\
--   Joyce Escatel Flores\
--   Robert Hutto\
--   Isley Jean-Pierre\
--   Shannon Joyce\
--   Emma Valentina Tupone\
--   Xinru Wang\
+-   Crystal Adote
+-   Jonah Dratfield
+-   Joyce Escatel Flores
+-   Robert Hutto
+-   Isley Jean-Pierre
+-   Shannon Joyce
+-   Emma Valentina Tupone
+-   Xinru Wang
 -   Laura Werner
 
 ------------------------------------------------------------------------
