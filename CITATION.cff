@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: "If you use these slides, please cite as below."
+title: "Teaching with NYC Open Data: NYC Open Data Week 2026 Presentation"
+type: software
+authors:
+  - family-names: "Martinez"
+    given-names: "Christian"
+    orcid: "https://orcid.org/0009-0005-6026-6454"
+date-released: 2026-03-22
+url: "https://github.com/martinezc1/nyc-open-data-week-2026"
+
+preferred-citation:
+  type: speech
+  title: "Teaching with NYC Open Data"
+  authors:
+    - family-names: "Martinez"
+      given-names: "Christian"
+      orcid: "https://orcid.org/0009-0005-6026-6454"
+  event: "NYC Open Data Week 2026"
+  date-start: 2026-03-22
+  url: "https://martinezc1.github.io/nyc-open-data-week-2026/#/title-slide"
