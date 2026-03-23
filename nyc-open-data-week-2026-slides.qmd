@@ -4,7 +4,7 @@ author: "Christian Martinez"
 format:
   revealjs:
     output-file: index.html
-     output-dir: docs
+    theme: dracula
 editor: visual
 ---
 
@@ -74,6 +74,19 @@ My project examines the leading causes of death in NYC from 2007–2014, and ind
 
 ## Data
 
+```{r}
+#| message: false
+#| warning: false
+#| include: false
+library(tidyverse)
+library(skimr)
+library(ggplot2)
+library(knitr)
+library(lubridate)
+library(arrow)
+library(here)
+```
+
 -   Leading causes of death: <https://data.cityofnewyork.us/resource/jb7j-dtam.json>
 -   Indoor environmental complaints: <https://data.cityofnewyork.us/resource/9jgj-bmct.json>
 
@@ -86,13 +99,6 @@ My project examines the leading causes of death in NYC from 2007–2014, and ind
 #| fig-cap: "This is a Heatmap that conveys 5 of the leading causes of death over the years"
 #| fig-alt: "This is a Heatmap that conveys 5 of the leading causes of death over the years"
 #| paged-print: false
-library(tidyverse)
-library(skimr)
-library(ggplot2)
-library(knitr)
-library(lubridate)
-library(arrow)
-library(here)
 
 causes_of_death<- read_parquet(
   here("data","raw", "New_York_City_Leading_Causes_of_Death_data.parquet"))
@@ -190,7 +196,6 @@ complaint_and_year<- ggplot(indoor_complaints, aes(x=Year, fill=complaint_type))
 theme_classic()
 complaint_and_year
 ```
-
 
 ## Data Cleaning and Analysis
 
@@ -1070,7 +1075,7 @@ contingency_table_check
 ```
 
 ```{r}
-#| label: Bar Graph of Goal 1
+#| label: fig-Bar-Graph-of-Goal-1
 #| echo: false
 Visual_1<- ggplot(merged_restaurant_data, aes(x = Near_Museum, fill = Rating_Group)) +
   geom_bar(position = "fill") + 
@@ -1696,12 +1701,10 @@ merged_restaurant_data<- merged_restaurant_data %>%
   )
 
 merged_restaurant_data<- merged_restaurant_data[-(623:642),]
-
-view(merged_restaurant_data)
 ```
 
 ```{r}
-#| label: Contingency Table
+#| label: tbl-Contingency-Table-joyce
 #| include: false
 contingency_table <- xtabs(~Rating_Group+Near_Museum, data=merged_restaurant_data)
 contingency_table
@@ -2404,6 +2407,7 @@ contingency_table_check_2
 ```
 
 ```{r}
+#| label: fig-Visual_2-joyce
 #| echo: false
 Visual_2<- ggplot(merged_restaurant_data, aes(x = Near_Museum, fill = Restaurant_Violation)) +
   geom_bar(position = "fill") + 
@@ -4429,8 +4433,6 @@ merged_restaurant_data<- merged_restaurant_data %>%
   )
 
 merged_restaurant_data<- merged_restaurant_data[-(623:642),]
-
-view(merged_restaurant_data)
 ```
 
 ```{r}
@@ -4502,7 +4504,10 @@ Visual_2<- ggplot(merged_restaurant_data, aes(x = Near_Museum, fill = Restaurant
 Visual_2
 ```
 
+::::: columns
+::: {.column width="60%"}
 ```{r}
+#| label: fig-leflet-joyce-res
 #| echo: false
 merged_restaurant_data$labels<- paste( "Restaurant:", merged_restaurant_data$Restaurant_Name, ".",
                 "Rating:", merged_restaurant_data$Rating) %>%
@@ -4544,8 +4549,17 @@ leaflet(data=merged_restaurant_data) %>%
     opacity = 1
   )
 ```
+:::
 
-**Red**: Low Rated Restaurants **Purple**: Average Rated Restaurants Dark **Blue**: High Rated Restaurants. **Black**: Museums
+::: {.column width="40%"}
+Key takeaway
+
+- **Red**: Low Rated Restaurants 
+- **Purple**: Average Rated Restaurants Dark 
+- **Blue**: High Rated Restaurants. 
+- **Black**: Museums
+:::
+:::::
 
 ## Project Relevance to New Yorkers
 
@@ -4557,9 +4571,7 @@ I believe that this project is relevant to New Yorkers who like to go to museums
 
 ## Robert Hutto
 
-### The Madison Square Garden Effect in the NBA
-
-#### "Using basic statistics to investigate The Garden's influence on basketball performances"
+### The Madison Square Garden Effect in the NBA: Using basic statistics to investigate The Garden's influence on basketball performances
 
 ```{r}
 library(hoopR)
@@ -4660,84 +4672,35 @@ The narrative: MSG uniquely influences players' performances under its bright li
 -   **Player analyses** excludes Knicks players home games; MSG data reflects **visiting teams only**
 -   Comparisons use independent samples *t*-tests
 
-## Q1: Knicks Home-Court Advantage {background-color="#1a1a2e"}
-
-```{r}
-#| label: fig-q1-plot
-#| echo: false
-non_nba_teams <- c("EAST", "WEST", "USA", "WORLD", "GIA", "LEB")
-knicks_abbrevs <- c("NY", "NYK")
-
-team_home_advantage <- pb |>
-  filter(!did_not_play, minutes > 0, !team_abbreviation %in% non_nba_teams) |>
-  group_by(game_id, team_abbreviation, home_away) |>
-  summarise(team_points = sum(points, na.rm = TRUE), .groups = "drop") |>
-  group_by(team_abbreviation, home_away) |>
-  summarise(avg_points = mean(team_points, na.rm = TRUE), .groups = "drop") |>
-  pivot_wider(names_from = home_away, values_from = avg_points) |>
-  mutate(home_court_advantage = home - away) |>
-  semi_join(nba_abbrevs, by = "team_abbreviation") |>
-  mutate(
-    is_knicks = team_abbreviation %in% knicks_abbrevs,
-    rank = rank(desc(home_court_advantage))
-  ) |>
-  arrange(desc(home_court_advantage))
-
-knicks_rank <- team_home_advantage |> filter(is_knicks) |> pull(rank)
-
-ggplot(team_home_advantage,
-       aes(x = reorder(team_abbreviation, home_court_advantage),
-           y = home_court_advantage,
-           fill = is_knicks)) +
-  geom_col(width = 0.8) +
-  geom_hline(yintercept = mean(team_home_advantage$home_court_advantage), 
-           linetype = "dotted", color = "grey", linewidth = 0.8) +
-  annotate("text", 
-         x = 1, 
-         y = mean(team_home_advantage$home_court_advantage),
-         label = paste0("Avg: ", round(mean(team_home_advantage$home_court_advantage), 1)),
-         hjust = -0, color = "grey", size = 3) +
-  scale_fill_manual(values = c("FALSE" = "#4a4a6a", "TRUE" = "#f7941d")) +
-  coord_flip() +
-  labs(
-    title = "Home-Court Advantage by Team (2002–Present)",
-    subtitle = "Knicks (orange) rank 23rd out of 30 teams",
-    x = NULL, y = "Avg Points Scored: Home − Away"
-  ) +
-  theme_minimal(base_size = 13) +
-  theme(legend.position = "none",
-        plot.title = element_text(face = "bold"),
-        axis.text.y = element_text(size = 8))
-```
-
-::: fragment
-The Knicks rank **23rd** out of 32 teams (including SEA & NJ) in home-court scoring advantage, placing them in the bottom 1/3 of the league. Having MSG as a home-court may actually be more of a detriment than a benefit.
-
-Follow-up question: do visiting players may play *better at MSG* compared to other away games?
-:::
-
 ## Q2: Visiting Player Performance at MSG {background-color="#1a1a2e"}
 
+::::: columns
+::: {.column width="58%"}
 ```{r}
 #| label: fig-q2-plot
 #| echo: false
+#| fig-width: 6
+#| fig-height: 4.5
+
 road_means <- pb_road_flagged |>
   group_by(at_msg) |>
   summarise(
-    ts             = mean(ts, na.rm = TRUE),
-    turnovers      = mean(turnovers, na.rm = TRUE),
+    ts = mean(ts, na.rm = TRUE),
+    turnovers = mean(turnovers, na.rm = TRUE),
     defensive_output = mean(defensive_output, na.rm = TRUE),
     .groups = "drop"
   ) |>
   mutate(location = if_else(at_msg, "Away at MSG", "Away (Other)")) |>
   select(location, ts, turnovers, defensive_output) |>
-  pivot_longer(cols = c(ts, turnovers, defensive_output),
-               names_to = "metric", values_to = "value") |>
+  pivot_longer(
+    cols = c(ts, turnovers, defensive_output),
+    names_to = "metric", values_to = "value"
+  ) |>
   mutate(
     metric = recode(metric,
-      ts               = "True Shooting %",
-      turnovers        = "Turnovers per game",
-      defensive_output = "Defensive Output (STL+BLK)"
+      ts = "True Shooting %",
+      turnovers = "Turnovers",
+      defensive_output = "STL + BLK"
     ),
     location = factor(location, levels = c("Away (Other)", "Away at MSG"))
   )
@@ -4746,29 +4709,36 @@ ggplot(road_means, aes(x = location, y = value, fill = location)) +
   geom_col(width = 0.75) +
   facet_wrap(~ metric, scales = "free_y") +
   scale_fill_manual(values = c("Away (Other)" = "#4a4a6a", "Away at MSG" = "#f7941d")) +
-  labs(
-    title = "Visiting Player Performance: MSG vs. Other Away Arenas",
-    x = NULL, y = NULL
-  ) +
-  theme_minimal(base_size = 13) +
-  theme(legend.position = "none",
-        strip.text = element_text(face = "bold"),
-        axis.text.x = element_text(angle = 20, hjust = 1))
+  labs(title = "MSG vs. Other Away Arenas", x = NULL, y = NULL) +
+  theme_minimal(base_size = 16) +
+  theme(
+    legend.position = "none",
+    strip.text = element_text(face = "bold"),
+    axis.text.x = element_text(angle = 20, hjust = 1)
+  )
 ```
-
-::: fragment
-At MSG, visiting players produce **less defensive stats** (*p* \< .001), but **shoot** **more efficiently** (*p* \< .001) and **turn the ball over** **less** (*p* = .029). Differences in raw points and offensive stat production were not significant.
-
-Based on the second and third graphs, one may conclude NBA players across the league tend to be more "locked in" when they have the ball at MSG vs. other away arenas. But why do players produce less blocks and steals?
-
-Let's look at individual players.
 :::
+
+::: {.column width="42%"}
+Key takeaway
+
+-   Less defense at MSG
+-   Higher true shooting
+-   Fewer turnovers
+-   Suggests players may be more locked in offensively at MSG
+:::
+:::::
 
 ## Q3: Who rises to the occasion at MSG? Who struggles? {background-color="#1a1a2e"}
 
-```{r fig.height=5.5}
+::::: columns
+::: {.column width="58%"}
+```{r}
 #| label: fig-q3-plot
 #| echo: false
+#| fig-height: 8
+#| fig-width: 10
+#| out-height: "80%"
 player_msg_advantage <- pb_road_flagged |>
   filter(!did_not_play, minutes >= 15) |>
   mutate(total_output = offensive_output + defensive_output) |>
@@ -4812,72 +4782,16 @@ ggplot(msg_extremes,
   theme(legend.position = "none",
         strip.text = element_text(face = "bold", size = 13))
 ```
-
-::: fragment
-The influence of playing at MSG on individual players' statistical production depends on the player.
-
-Knicks fans, do the players on the left seem overrated by other NBA fans? Do the players on the right evoke fear, anger, disdain, or general thoughts associated with villains?
 :::
 
-## Q3: MSG Risers/Strugglers (Current Players Only) {background-color="#1a1a2e"}
-
-```{r fig.height=5.5}
-#| label: fig-q3-plot2
-#| echo: false
-current_player_ids <- pb |>
-  filter(season == most_recent_nba_season()) |>
-  distinct(athlete_id)
-
-player_msg_advantage_current <- pb_road_flagged |>
-  filter(!did_not_play, minutes >= 15) |>
-  mutate(total_output = offensive_output + defensive_output) |>
-  group_by(athlete_id, athlete_display_name, at_msg) |>
-  summarise(
-    games      = n(),
-    avg_total  = mean(total_output, na.rm = TRUE),
-    avg_pts    = mean(points, na.rm = TRUE),
-    avg_ts     = mean(ts, na.rm = TRUE),
-    .groups    = "drop"
-  ) |>
-  pivot_wider(names_from = at_msg,
-              values_from = c(games, avg_total, avg_pts, avg_ts)) |>
-  mutate(
-    msg_adv_total = avg_total_TRUE - avg_total_FALSE,
-    msg_adv_pts   = avg_pts_TRUE   - avg_pts_FALSE,
-    msg_adv_ts    = avg_ts_TRUE    - avg_ts_FALSE
-  ) |>
-  semi_join(current_player_ids, by = "athlete_id") |>
-  filter(games_TRUE >= 8)
-
-msg_extremes_current <- bind_rows(
-  player_msg_advantage_current |> arrange(desc(msg_adv_total)) |> slice_head(n = 12) |> mutate(group = "MSG Risers"),
-  player_msg_advantage_current |> arrange(msg_adv_total)       |> slice_head(n = 12) |> mutate(group = "MSG Chokers")
-) |>
-  mutate(athlete_display_name = factor(athlete_display_name,
-                                       levels = athlete_display_name[order(msg_adv_total)]))
-
-ggplot(msg_extremes_current,
-       aes(x = msg_adv_total, y = athlete_display_name, fill = group)) +
-  geom_col(width = 0.75) +
-  facet_wrap(~ group, scales = "free_y") +
-  scale_fill_manual(values = c("MSG Risers" = "#f7941d", "MSG Strugglers" = "#6a4a7a")) +
-  geom_vline(xintercept = 0, linetype = "dashed", color = "grey60") +
-  labs(
-    title = "Total Stat Output: MSG vs. Other Away Games (Only Current Player Data)",
-    subtitle = "Min. 8 games w/ >15mins played at MSG as a visiting player",
-    x = "MSG Output − Other Away Output",
-    y = NULL
-  ) +
-  theme_minimal(base_size = 12) +
-  theme(legend.position = "none",
-        strip.text = element_text(face = "bold", size = 13))
-```
-
-::: fragment
+::: {.column width="42%"}
 The influence of playing at MSG on individual players' statistical production depends on the player.
 
-Knicks fans, do the players on the left seem overrated by other NBA fans? Do the players on the right evoke fear, anger, disdain, or general thoughts associated with villains?
+Knicks fans:
+
+-   Do the players on the left seem overrated by other NBA fans? Any NBA villains?
 :::
+:::::
 
 ## Conclusions {background-color="#1a1a2e"}
 
@@ -4893,6 +4807,63 @@ Knicks fans, do the players on the left seem overrated by other NBA fans? Do the
 ## Isley Jean-Pierre
 
 ### From School To Juvenile Incarceration
+
+## Introduction
+
+-   Juvenile recidivism remains a major policy concern
+-   Probation supervision and school outcomes may influence rearrest rates
+-   This project investigates:
+    -   Rearrest Rates
+    -   Probation Caseloads
+    -   School Discharge Patterns
+
+**Goal:** To provide an understanding in regards to those three factors to help policymakers evaluate whether current probation resources are sufficient to reduce recidivism among youth.
+
+## Research Questions
+
+1.  How does supervision caseload relate to rearrest rates among youths?
+
+2.  What can school discharges tell us about supervision caseloads and rearrest rates?
+
+## Key Findings
+
+-   A correlation of (r = 0.49) shows a weak positive relationship between supervision caseloads and rearrest rates among the youths.
+
+-   A regression analysis (p \< .003) indicates that juvenile caseloads significantly predict rearrest rate.
+
+-   R-squared = 0.24, which means that 24% of rearrest rates is explained by supervision caseloads.
+
+-   Overall, these results signify that more caseloads tend to lead to more rearrest rates.
+
+## Visualization
+
+## Visualization
+
+## Visualization
+
+## Visualization
+
+## Visualization
+
+## Conclusion
+
+-   Caseload size is significantly related to rearrest rates
+-   Relationship is positive but moderate (R-squared = 0.24)
+-   School discharge patterns differ by school level
+    -   Middle school -\> more discharges
+    -   High school -\> more dropouts
+
+## Implication
+
+-   Too many caseloads may reduce supervision effectiveness
+    -   Supervision quality
+    -   Rehabilitation (counseling or support services)
+-   Education disruptions can potentially lead to crime involvement
+
+## Next Steps
+
+-   Demographic variables
+-   More time series analysis
 
 ------------------------------------------------------------------------
 
@@ -5197,7 +5168,7 @@ Do domestic violence reports and residential mold complaints in NYC follow simil
 [311 Service Requests (Mold Complaints)](https://data.cityofnewyork.us/Social-Services/311-Service-Requests-from-2020-to-Present/erm2-nwe9/about_data)
 
 ```{r}
-#| label: mold datasets
+#| label: tbl-mold-datasets
 #| echo: false
 head(aggregated_mold_data, n=3) %>% kable()
 ```
@@ -5207,7 +5178,7 @@ head(aggregated_mold_data, n=3) %>% kable()
 [NYPD Complaint Data Historic (Domestic Violence Reports)](https://data.cityofnewyork.us/Public-Safety/NYPD-Complaint-Data-Historic/qgea-i56i/about_data)
 
 ```{r}
-#| label: dv datasets
+#| label: tbl-dv-datasets
 #| echo: false
 head(aggregated_dv_data, n=3) %>% kable()
 ```
@@ -5239,6 +5210,7 @@ mold_summary <- aggregated_mold_data %>%
 DV Report Summaries
 
 ```{r}
+#| label: tbl-dv-summary
 kable(dv_summary)
 ```
 
@@ -5247,6 +5219,7 @@ kable(dv_summary)
 Mold Complaint Summaries
 
 ```{r}
+#| label: tbl-mold-summary
 kable(mold_summary)
 ```
 
@@ -5293,7 +5266,7 @@ p1 + p2
 ## Exploratory Analysis: Temporal Trends by Borough
 
 ```{r}
-#| label: trends
+#| label: fig-trends
 #| echo: false
 plot_data <- aggregated_dv_mold_data %>%
   pivot_longer(
@@ -5415,49 +5388,201 @@ AIC(lm_resolution_borough)
 
 ### Environmental Stressors and Social Complaints in NYC
 
-## Research Question
+```{r}
+#| include: false
+library(tidyverse)
+library(lubridate)
+library(readxl)
+library(httr)
+library(jsonlite)
 
--   Does environmental risk relate to social stress?
+# Load datasets
+edesignation <- read_parquet(
+  here("data", "raw", "E-Designations.parquet"),
+  na = c("N/A", "NA", "")
+)
 
--   Flooding → environmental risk
+hazard_mitigation <- read_parquet(
+  here("data", "raw", "Hazard_Mitigation_Plan.parquet"),
+  na = c("N/A", "NA", "")
+)
 
--   Noise → social stress indicator
+street_flooding <- read_parquet(
+  here("data", "raw", "Street_Flooding_Complaints.parquet"),
+  na = c("N/A", "NA", "")
+)
 
-## Data Sources
+# Function to access NYC Open Data
+get_nyc_data <- function(url) {
+  response <- httr::GET(url)
 
--   311 Noise & Flooding Complaints
+  jsonlite::fromJSON(
+    httr::content(response, "text", encoding = "UTF-8"),
+    flatten = TRUE
+  ) |>
+    tibble::as_tibble()
+}
 
--   E-Designations
+# Pull noise complaints from API
+noise_url <- URLencode(paste0(
+  "https://data.cityofnewyork.us/resource/erm2-nwe9.json?",
+  "$select=unique_key,created_date,complaint_type,borough,city,",
+  "x_coordinate_state_plane,y_coordinate_state_plane&",
+  "$where=complaint_type LIKE 'Noise%' ",
+  "AND created_date >= '2018-01-01T00:00:00'&",
+  "$limit=50000"
+))
 
--   NYC Hazard Mitigation Plan
+noise <- get_nyc_data(noise_url)
+
+# Clean datasets
+noise_clean <- noise |>
+  filter(!is.na(borough)) |>
+  mutate(
+    created_date = as.POSIXct(created_date),
+    year = year(created_date),
+    Borough = borough
+  ) |>
+  group_by(Borough, year) |>
+  summarise(noise_complaints = n(), .groups = "drop")
+
+flood_clean <- street_flooding |>
+  filter(!is.na(Borough)) |>
+  mutate(
+    created_date = as.POSIXct(`Created Date`),
+    year = year(created_date)
+  ) |>
+  group_by(Borough, year) |>
+  summarise(flood_complaints = n(), .groups = "drop")
+
+# Merge datasets
+complaints <- left_join(
+  flood_clean,
+  noise_clean,
+  by = c("Borough","year")
+)
+```
+
+## Project Overview
+
+-   Climate change increases urban environmental stress
+
+-   Flooding can disrupt infrastructure and communities
+
+-   Social stress may appear in complaint behavior
+
+### Research Question
+
+-   Do flooding complaints relate to noise complaints across NYC boroughs?
+
+## Data Preview
+
+```{r}
+#| label: tbl-flood
+#| echo: false
+head(street_flooding, 3) %>% kable()
+```
+
+```{r}
+#| echo: false
+#| label: tbl-noise
+head(noise, 3) %>% kable()
+```
+
+## Exploratory Summary
+
+```{r summary-flood}
+#| include: false
+summary(flood_clean)
+```
+
+```{r summary-noise}
+#| include: false
+summary(noise_clean)
+```
+
+-   Flood complaints vary across boroughs and years
+
+-   Noise complaints show even larger variation
+
+-   Some boroughs report very high complaint activity
 
 ## Flooding Complaints by Borough
 
--   Flooding varies across boroughs
+```{r}
+#| label: fig-flood-clean
+ggplot(flood_clean, aes(x = Borough, y = flood_complaints)) +
+  geom_col(fill = "#2a9d8f") +
+  theme_minimal()
+```
 
--   Infrastructure differences likely
+-   Visual comparison of flooding complaints
 
-## Flooding vs. Noise Complaints
+-   Shows variation across boroughs
 
--   Small positive trend
+-   Highlights environmental vulnerability differences
+
+## Correlation
+
+```{r}
+#| label: correlation
+cor(
+  complaints$flood_complaints,
+  complaints$noise_complaints,
+  use = "complete.obs"
+)
+```
+
+-   Measures strength of relationship
+
+-   Positive value = increase together
+
+-   Value near zero = weak relationship
+
+## Correlation Plot
+
+```{r}
+#| label: fig-complaints-emma
+ggplot(complaints,
+       aes(flood_complaints, noise_complaints, color = Borough)) +
+  geom_point(size = 3, alpha = .7) +
+  geom_smooth(method = "lm", se = FALSE) +
+  theme_minimal()
+```
+
+-   Each point = borough-year observation
+
+-   Line shows overall trend
+
+-   Relationship appears weak
+
+## Regression Model
+
+```{r regression}
+#| include: false
+model <- lm(noise_complaints ~ flood_complaints, data = complaints)
+summary(model)
+```
+
+-   Tests predictive relationship
+
+-   Coefficient ≈ 0.42
+
+-   p-value = 0.71
 
 -   Not statistically significant
 
-## Results
+## Key Takeaways
 
--   Weak positive association
+-   Flood complaints vary across NYC boroughs
 
--   Not significant
+-   Noise complaints vary widely
 
--   Little variance explained
+-   Relationship between the two was **weak**
 
-## Why it Matters
+-   Environmental stress likely influenced by **multiple factors**
 
--   Open data reveals urban stress patterns
-
--   Flooding alone isn't predictive
-
--   Framework for future analysis
+-   NYC Open Data enables civic research
 
 ## Thank You!
 
