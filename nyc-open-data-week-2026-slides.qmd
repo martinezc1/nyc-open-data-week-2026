@@ -4,6 +4,7 @@ author: "Christian Martinez"
 format:
   revealjs:
     output-file: index.html
+     output-dir: docs
 editor: visual
 ---
 
