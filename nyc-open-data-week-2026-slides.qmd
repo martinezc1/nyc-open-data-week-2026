@@ -155,6 +155,8 @@ deaths_summary <- causes_of_death %>%
   group_by(cause_of_death) %>%
   summarise(`Number of Deaths` = n(), .groups = "drop")
 
+death_counts<- causes_of_death %>% count(Year, cause_of_death)
+
 death_causes_and_year<- ggplot(death_counts, aes(x=Year, y=cause_of_death, fill=n))+
   geom_tile()+
   labs(
@@ -5546,8 +5548,6 @@ animal_clean <- animal_clean %>%
 #| echo: false
 #| message: false
 #| warning: false
-#| fig-height: 3
-#| fig-width: 6
 
 tree_summary <- tree_clean %>%
   group_by(borough) %>%
