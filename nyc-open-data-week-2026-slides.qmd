@@ -16,9 +16,11 @@ Brooklyn College, City University of New York (CUNY)
 
 NYC Open Data Week 2026
 
-### [NYC Open Data Student Gallery](https://martinezc1-nyc-open-data-student-gallery.share.connect.posit.cloud/)
+### Resources
 
-### [nycOpenData Package](https://martinezc1.github.io/nycOpenData/)
+-   [NYC Open Data Student Gallery](https://martinezc1-nyc-open-data-student-gallery.share.connect.posit.cloud/)
+
+-   [nycOpenData Package](https://martinezc1.github.io/nycOpenData/)
 
 ## Why This Matters
 
@@ -50,16 +52,14 @@ Each student will briefly share:
 
 ## Student Presenters
 
-These projects were developed as part of a graduate course in reproducible research using real NYC data.
-
--   Crystal Adote
--   Jonah Dratfield
--   Joyce Escatel Flores
--   Robert Hutto
--   Isley Jean-Pierre
--   Shannon Joyce
--   Emma Valentina Tupone
--   Xinru Wang
+-   [Crystal Adote](https://www.linkedin.com/in/crystal-adote-0305641ba/)
+-   [Jonah Dratfield](https://www.linkedin.com/in/jonah-dratfield-932584167/)
+-   [Joyce Escatel Flores](https://www.linkedin.com/in/joyce-escatel-flores/)
+-   [Robert Hutto](https://www.linkedin.com/in/robert-hutto-2497ab181/)
+-   [Isley Jean-Pierre](https://www.linkedin.com/in/isley-jean-pierre-21aa00396/)
+-   [Shannon Joyce](https://www.linkedin.com/in/shannonjoyce222/)
+-   [Emma Valentina Tupone](https://www.linkedin.com/in/emma-tupone-1353a1291/)
+-   [Xinru Wang](https://www.linkedin.com/in/xinru-wang-798937393/)
 -   Laura Werner
 
 ------------------------------------------------------------------------
@@ -1717,16 +1717,14 @@ Knicks fans:
 
 ## Isley Jean-Pierre
 
-### From School To Juvenile Incarceration
+### Examining How Juvenile Probation And School Discharge Contribute To Recidivism
 
 ## Introduction
 
 -   Juvenile recidivism remains a major policy concern
 -   Probation supervision and school outcomes may influence rearrest rates
 -   This project investigates:
-    -   Rearrest Rates
-    -   Probation Caseloads
-    -   School Discharge Patterns
+    -   Rearrest Rates, Probation Caseloads, and School Discharge Patterns
 
 **Goal:** To help policymakers evaluate whether current probation resources are sufficient to reduce recidivism among youth.
 
@@ -1736,17 +1734,17 @@ Knicks fans:
 
 2.  What can school discharges tell us about supervision caseloads and rearrest rates?
 
-## Key Findings
+## Results
 
--   A correlation of (r = 0.49) shows a weak positive relationship between supervision caseloads and rearrest rates among the youths.
+### How does supervision caseload relate to rearrest rates among youths?
 
--   A regression analysis (p \< .003) indicates that juvenile caseloads significantly predict rearrest rate.
+-   A correlation analysis **(r = 0.49)** shows a weak positive relationship between supervision caseloads and rearrest rates among the youths.
 
--   R-squared = 0.24, which means that 24% of rearrest rates is explained by supervision caseloads.
+-   A regression analysis **(p \< .003)** indicates that juvenile caseloads significantly predict rearrest rates. **R-squared = 0.24** (24%).
 
 -   Overall, these results signify that more caseloads tend to lead to more rearrest rates.
 
-## Visualization
+## Time Series Analysis
 
 ```{r}
 library(tidyverse)
@@ -1755,6 +1753,7 @@ library(Hmisc)
 library(ggplot2)
 library(corrplot)
 library(lubridate)
+library(nycOpenData)
 ```
 
 ```{r}
@@ -1842,7 +1841,7 @@ ggplot(combined_scaled, aes(x = month_year)) +
   theme_minimal()
 ```
 
-## Visualization
+## Regression Analysis
 
 ```{r}
 #| label: fig-combined-data-isley
@@ -1856,6 +1855,16 @@ ggplot(combined_data, aes(x = total_cases, y = rate)) +
   ) +
   theme_minimal()
 ```
+
+## Results
+
+### What can school discharges tell us about supervision caseloads and rearrest rates?
+
+-   An independent t-test **(t = 1.15, df = 159.43, p \< 0.25)** shows no significant difference between school discharge rate and school level.
+
+-   A Chi-square analysis **(X-squared = 938.62, df = 1, p \< 2.2e-16)** suggests a significant difference between discharge category and school level.
+
+-   **Cramer's V (0.54)**. Moderate to strong relationship between discharge category and school level.
 
 ```{r}
 library(tidyverse)
@@ -1907,6 +1916,8 @@ sum_r <- sdis_male %>%
 
 ```{r}
 t_test_discharge <- t.test(discharge_rate ~ school_level, data = sdis_male)
+t_test_discharge
+wilcox.test(discharge_rate ~ school_level, data = sdis_male)
 ```
 
 ```{r}
@@ -1923,10 +1934,12 @@ c_tab <- xtabs(total ~ school_level + discharge_category, data = table_male)
 #| label: tbl-chisq-square
 #| eval: false
 #| include: false
+library(rcompanion)
 chisq.test(c_tab)
+cramerV(c_tab)
 ```
 
-## Visualization
+## Discharge Rates By School Level
 
 ```{r}
 #| label: fig-sdis-male
@@ -1940,7 +1953,7 @@ ggplot(sdis_male, aes(x = school_level, y = discharge_rate)) +
   theme_minimal()
 ```
 
-## Visualization
+## Discharge Types By School Level
 
 ```{r}
 #| label: fig-table-male
@@ -1954,7 +1967,7 @@ ggplot(table_male, aes(x = school_level, y = total, fill = discharge_category)) 
   theme_minimal()
 ```
 
-## Visualization
+## School Discharges By Districts
 
 ```{r}
 library(dplyr)
@@ -2078,28 +2091,22 @@ leaflet(map_data) %>%
 ## Conclusion
 
 -   Caseload size is significantly related to rearrest rates
--   Relationship is positive but moderate (R-squared = 0.24)
 -   School discharge patterns differ by school level
-    -   Middle school -\> more discharges
-    -   High school -\> more dropouts
-
-## Implication
-
 -   Too many caseloads may reduce supervision effectiveness
-    -   Supervision quality
-    -   Rehabilitation (counseling or support services)
 -   Education disruptions can potentially lead to crime involvement
-
-## Next Steps
-
 -   Demographic variables
--   More time series analysis
+
+## THANK YOU!
 
 ------------------------------------------------------------------------
 
 ## Shannon Joyce
 
 ### Toxic Homes: Exploring Mold Exposure Complaint and Domestic Violence Report Trends in NYC
+
+-   [Github](https://github.com/shannonjoyce)
+
+-   [LinkedIn](www.linkedin.com/in/shannonjoyce222%22)
 
 ```{r}
 #| echo: false
@@ -2385,79 +2392,332 @@ mold_monthly_resolution <- mold_data_clean %>%
   arrange(Year, Month)
 ```
 
+```{r}
+#| echo: false
+
+library(tidyverse)
+library(readxl)
+library(ggplot2)
+library(mosaic)
+library(AICcmodavg)
+library(knitr)
+library(patchwork)
+
+mold_data <- read_parquet(
+  here("data", "raw","311_Service_Requests_from_2010_to_Present_20251215.parquet"))
+dv_data <- read_parquet(
+  here("data", "raw","NYPD_Complaint_Data_Historic_20251218.parquet"))
+
+mold_data_clean <- mold_data %>% filter(
+           `Location Type` == "RESIDENTIAL BUILDING" | `Location Type` == "Residential Building" | `Location Type` == "Loft Residence" | `Location Type` == "Mixed Use Building" | `Location Type` == "Apartment" | `Location Type` == "3+ Family Apartment Building" | `Location Type` == "1-2 Family Dwelling" | `Location Type` == "1-2 Family Mixed Use Building" | `Location Type` == "3+ Family Mixed Use Building" | `Location Type` == "Single Room Occupancy (SRO)")
+
+dv_data_clean<- dv_data %>% rename(
+  "complaint_number" = `CMPLNT_NUM`,
+  "inc_occur_date" = `CMPLNT_FR_DT`,
+  "inc_occur_time" = `CMPLNT_FR_TM`,
+  "inc_end_date" = `CMPLNT_TO_DT`,
+  "inc_end_time" = `CMPLNT_TO_TM`,
+  "precinct_occur" = `ADDR_PCT_CD`,
+  "report_date" = `RPT_DT`,
+  "key_code" = `KY_CD`,
+  "offense_type" = `OFNS_DESC`,
+  "class_code" = `PD_CD`,
+  "class_code_desc" = `PD_DESC`,
+  "attempt_completion" = `CRM_ATPT_CPTD_CD`,
+  "offense_level" = `LAW_CAT_CD`,
+  "borough" = `BORO_NM`,
+  "occur_location" = `LOC_OF_OCCUR_DESC`,
+  "premise_desc" = `PREM_TYP_DESC`,
+  "juris_code_desc" = `JURIS_DESC`,
+  "jurisdiction" = `JURISDICTION_CODE`,
+  "park_occur" = `PARKS_NM`,
+  "development" = `HADEVELOPT`,
+  "development_code" = `HOUSING_PSA`,
+  "x_coord" = `X_COORD_CD`,
+  "y_coord" = `Y_COORD_CD`,
+  "suspect_age" = `SUSP_AGE_GROUP`,
+  "suspect_race" = `SUSP_RACE`,
+  "suspect_sex" = `SUSP_SEX`,
+  "transit_district" = `TRANSIT_DISTRICT`,
+  "patrol_borough" = `PATROL_BORO`,
+  "station_name" = `STATION_NAME`,
+  "victim_age" = `VIC_AGE_GROUP`,
+  "victim_race" = `VIC_RACE`,
+  "victim_sex" = `VIC_SEX`
+  )
+
+mold_data_clean <- mold_data_clean %>%
+  mutate(Created_Date_Original = `Created Date`) %>% 
+  separate(
+    col = `Created Date`,
+  into = c("Year","Month","Day"),
+  sep = "-", 
+  remove = FALSE
+)
+
+dv_data_clean <- dv_data_clean %>% separate(
+  col = inc_occur_date,
+  into = c("Year","Month","Day"),
+  sep = "-",
+)
+
+mold_data_clean <- mold_data_clean %>%
+  filter(Descriptor != "Unsafe Mold Cleanup")
+
+mold_data_clean<- mold_data_clean %>% mutate(
+  `Complaint Type` = recode(
+    `Complaint Type`, 
+    "UNSANITARY CONDITION" = "Mold",
+    "Unsanitary Condition" = "Mold",
+    "MOLD" = "Mold",
+    "GENERAL" = "Mold",
+    "GENERAL CONSTRUCTION" = "Mold"
+  ))
+
+mold_data_clean<- mold_data_clean %>% mutate(
+  `Month` = recode(
+    `Month`, 
+    "01" = "01 - January",
+    "02" = "02 - February",
+    "03" = "03 - March",
+    "04" = "04 - April",
+    "05" = "05 - May",
+    "06" = "06 - June",
+    "07" = "07 - July",
+    "08" = "08 - August",
+    "09" = "09 - September",
+    "10" = "10 - October",
+    "11" = "11 - November",
+    "12" = "12 - December"
+    ))
+
+dv_data_clean<- dv_data_clean %>% mutate(
+  `Month` = recode(
+    `Month`, 
+    "01" = "01 - January",
+    "02" = "02 - February",
+    "03" = "03 - March",
+    "04" = "04 - April",
+    "05" = "05 - May",
+    "06" = "06 - June",
+    "07" = "07 - July",
+    "08" = "08 - August",
+    "09" = "09 - September",
+    "10" = "10 - October",
+    "11" = "11 - November",
+    "12" = "12 - December"
+  ))
+
+dv_data_clean$complaint <- "DV"
+
+dv_data_clean <- dv_data_clean %>%
+  mutate(Year = as.numeric(Year)) %>%
+  filter(Year >= 2010)
+
+mold_data_clean<- mold_data_clean %>% mutate(
+  Borough = case_when(
+    City == "NEW YORK" ~ "MANHATTAN",
+    City == "BROOKLYN" ~ "BROOKLYN",
+    City == "ARVERNE" ~ "QUEENS",
+    City == "BRONX" ~ "BRONX",
+    City == "JAMAICA" ~ "QUEENS",
+    City == "SPRINGFIELD GARDENS" ~ "QUEENS",
+    City == "FLUSHING" ~ "QUEENS",
+    City == "STATEN ISLAND" ~ "STATEN ISLAND",
+    City == "RICHMOND HILL" ~ "QUEENS",
+    City == "ASTORIA" ~ "QUEENS",
+    City == "HOLLIS" ~ "QUEENS",
+    City == "RIDGEWOOD" ~ "QUEENS",
+    City == "FOREST HILLS" ~ "QUEENS",
+    City == "ELMHURST" ~ "QUEENS",
+    City == "MASPETH" ~ "QUEENS",
+    City == "SOUTH RICHMOND HILL" ~ "QUEENS",
+    City == "JACKSON HEIGHTS" ~ "QUEENS",
+    City == "BAYSIDE" ~ "QUEENS",
+    City == "FAR ROCKAWAY" ~ "QUEENS",
+    City == "SAINT ALBANS" ~ "QUEENS",
+    City == "CORONA" ~ "QUEENS",
+    City == "WOODSIDE" ~ "QUEENS",
+    City == "QUEENS VILLAGE" ~ "QUEENS",
+    City == "REGO PARK" ~ "QUEENS",
+    City == "ROSEDALE" ~ "QUEENS",
+    City == "SUNNYSIDE" ~ "QUEENS",
+    City == "OZONE PARK" ~ "QUEENS",
+    City == "EAST ELMHURST" ~ "QUEENS",
+    City == "MIDDLE VILLAGE" ~ "QUEENS",
+    City == "WOODHAVEN" ~ "QUEENS",
+    City == "SOUTH OZONE PARK" ~ "QUEENS",
+    City == "ROCKAWAY PARK" ~ "QUEENS",
+    City == "KEW GARDENS" ~ "QUEENS",
+    City == "FRESH MEADOWS" ~ "QUEENS",
+    City == "COLLEGE POINT" ~ "QUEENS",
+    City == "LONG ISLAND CITY" ~ "QUEENS",
+    City == "OAKLAND GARDENS" ~ "QUEENS",
+    City == "WHITESTONE" ~ "QUEENS",
+    City == "HOWARD BEACH" ~ "QUEENS",
+    City == "CAMBRIA HEIGHTS" ~ "QUEENS",
+    City == "BELLEROSE" ~ "QUEENS",
+    City == "LITTLE NECK" ~ "QUEENS",
+    City == "BREEZY POINT" ~ "QUEENS",
+    City == "GLEN OAKS" ~ "QUEENS",
+    City == "FLORAL PARK" ~ "QUEENS",
+    City ==  "PELHAM" ~ "BRONX",
+    City == "NEW HYDE PARK" ~ "QUEENS",
+    City == "QUEENS" ~ "QUEENS",
+    City == "MANHATTAN" ~ "MANHATTAN",
+    City == "Far Rockaway" ~ "QUEENS",  
+    City == "Astoria" ~ "QUEENS",
+    City == "Elmhurst" ~ "QUEENS",
+    City == "Corona" ~ "QUEENS",       
+    City == "Ozone Park" ~ "QUEENS",
+    City == "Forest Hills" ~ "QUEENS",
+    City == "Jamaica" ~ "QUEENS",  
+    City == "Arverne" ~ "QUEENS",
+    City == "Bayside" ~ "QUEENS",
+    City == "East Elmhurst" ~ "QUEENS", 
+    City == "Flushing" ~ "QUEENS",
+    City == "Middle Village" ~ "QUEENS",
+    City == "Ridgewood" ~ "QUEENS",
+    City == "Woodside" ~ "QUEENS",
+    City == "Oakland Gardens" ~ "QUEENS",
+    City == "Rego Park" ~ "QUEENS",
+    City == "Hollis" ~ "QUEENS",
+    City == "Saint Albans" ~ "QUEENS",
+    City == "Springfield Gardens" ~ "QUEENS",
+    City == "Kew Gardens" ~ "QUEENS",
+    City == "Fresh Meadows" ~ "QUEENS",
+    City == "Howard Beach" ~ "QUEENS",
+    City == "South Rich mond Hill" ~ "QUEENS",
+    City == "Whitestone" ~ "QUEENS",
+    City == "South Ozone Park" ~ "QUEENS",
+    City == "College Point" ~ "QUEENS",
+    City == "Jackson Heights" ~ "QUEENS",
+    City == "Maspeth" ~ "QUEENS",
+    City == "Long Island City" ~ "QUEENS",
+    City == "Rockaway Park" ~ "QUEENS",
+    City == "Sunnyside" ~ "QUEENS",
+    City == "Woodhaven" ~ "QUEENS",
+    City == "Floral Park" ~ "QUEENS",
+    City == "Glen Oaks" ~ "QUEENS",
+    City == "Queens Village" ~ "QUEENS",
+    City == "Bellerose" ~ "QUEENS",
+    City == "Little Neck" ~ "QUEENS",
+    City == "Richmond Hill" ~ "QUEENS",
+    City == "Rosedale" ~ "QUEENS",
+    City == "Cambria Heights" ~ "QUEENS",
+    City == "New Hyde Park" ~ "QUEENS",
+    City == "Breezy Point" ~ "QUEENS",
+  )
+)
+
+mold_data_clean <- mold_data_clean %>% filter(!is.na(Borough))
+mold_data_clean<- mold_data_clean %>% filter(Year != 2025)
+
+mold_data_clean <- mold_data_clean %>%
+  mutate(
+    created_date = as.Date(`Created Date`),
+    closed_date  = as.Date(`Closed Date`),
+    resolution_days = as.numeric(closed_date - created_date)
+  )
+
+aggregated_dv_data <- dv_data_clean %>%
+  group_by(Year, Month, borough) %>%
+  summarise(
+    `complaint` = n(),
+    .groups = "drop"
+  )
+aggregated_dv_data <- aggregated_dv_data %>%
+  filter(borough != "(null)")
+
+aggregated_dv_data <- aggregated_dv_data %>%
+  mutate(Year = as.character(Year))
+
+aggregated_dv_data<- aggregated_dv_data %>% rename(
+  "Borough" = "borough")
+
+aggregated_dv_data<- aggregated_dv_data %>% rename(
+  "DV Reports" = "complaint"
+)
+
+aggregated_mold_data <- mold_data_clean %>%
+  group_by(Year, Month, Borough) %>%
+  summarise(
+  `Complaint Type` = n(),
+  .groups = "drop"
+)
+
+aggregated_mold_data<- aggregated_mold_data %>% rename(
+  "Mold Complaints" = "Complaint Type"
+)
+
+aggregated_dv_mold_data <- left_join(
+  aggregated_dv_data,
+  aggregated_mold_data,
+  by = c("Borough", "Year", "Month")
+)
+
+aggregated_dv_mold_data <- aggregated_dv_mold_data %>%
+  mutate(
+    year_month = paste(Year, Month)
+  )
+
+aggregated_dv_mold_data <- aggregated_dv_mold_data %>%
+  group_by(Borough) %>%
+  mutate(time_index = row_number()) %>%
+  ungroup()
+
+monthly_counts <- aggregated_dv_mold_data %>%
+  group_by(Year, Month) %>%
+  summarise(
+    total_dv = sum(`DV Reports`, na.rm = TRUE),
+    total_mold = sum(`Mold Complaints`, na.rm = TRUE)
+  )
+
+mold_monthly_resolution <- mold_data_clean %>%
+  group_by(Year, Month) %>%
+  summarise(
+    avg_resolution_days = mean(resolution_days, na.rm = TRUE),
+    n_complaints = n()
+  ) %>%
+  arrange(Year, Month)
+```
+
 ## Project Overview
 
--   Mold Exposure —\> Psychological Stress
+-   Mold Exposure —\> Psychological Stress/Aggression
 
--   Psychological Stress —\> Domestic Violence
+-   Psychological Stress/Aggression —\> Domestic Violence
 
-Do domestic violence reports and residential mold complaints in NYC follow similar, correlated patterns over time?
+[**Do domestic violence reports and residential mold complaints in NYC follow similar, correlated patterns over time?**]{style="color: #994C99;"}
 
-## Datasets-Mold
+## Datasets: Mold Complaints
 
-[311 Service Requests (Mold Complaints)](https://data.cityofnewyork.us/Social-Services/311-Service-Requests-from-2020-to-Present/erm2-nwe9/about_data)
+[311 Service Requests](https://data.cityofnewyork.us/Social-Services/311-Service-Requests-from-2020-to-Present/erm2-nwe9/about_data)
 
 ```{r}
-#| label: tbl-mold-datasets
+#| label: mold datasets
 #| echo: false
-head(aggregated_mold_data, n=3) %>% kable()
+#| tbl-cap: "Table 1. Aggregated residential mold complaints by borough, 2010-2024."
+head(aggregated_mold_data, n=5) %>% kable()
 ```
 
-## Datasets-Domestic Violence
+## Datasets: Domestic Violence Reports
 
-[NYPD Complaint Data Historic (Domestic Violence Reports)](https://data.cityofnewyork.us/Public-Safety/NYPD-Complaint-Data-Historic/qgea-i56i/about_data)
+[NYPD Complaint Data Historic](https://data.cityofnewyork.us/Public-Safety/NYPD-Complaint-Data-Historic/qgea-i56i/about_data)
 
 ```{r}
-#| label: tbl-dv-datasets
+#| label: dv datasets
 #| echo: false
-head(aggregated_dv_data, n=3) %>% kable()
-```
-
-## Exploratory Summaries
-
-```{r}
-#| label: summaries
-#| echo: false
-dv_summary <- aggregated_dv_data %>%
-  summarise(
-    total_reports = sum(`DV Reports`),
-    start_year = min(as.numeric(Year)),
-    end_year = max(as.numeric(Year)),
-    boroughs = n_distinct(Borough),
-    avg_monthly = mean(`DV Reports`)
-  )
-
-mold_summary <- aggregated_mold_data %>%
-  summarise(
-    total_complaints = sum(`Mold Complaints`),
-    start_year = min(as.numeric(Year)),
-    end_year = max(as.numeric(Year)),
-    boroughs = n_distinct(Borough),
-    avg_monthly = mean(`Mold Complaints`)
-  )
-```
-
-DV Report Summaries
-
-```{r}
-#| label: tbl-dv-summary
-kable(dv_summary)
-```
-
-\|
-
-Mold Complaint Summaries
-
-```{r}
-#| label: tbl-mold-summary
-kable(mold_summary)
+#| tbl-cap: "Table 2. Aggregated domestic violence reports by borough, 2010-2024."
+head(aggregated_dv_data, n=5) %>% kable()
 ```
 
 ## Exploratory Analysis: Heat Maps
 
 ```{r}
-#| label: fig-heatmaps
+#| label: heatmaps
 #| echo: false
+#| fig-cap: "Figure 1. DV reports & mold complaints by borough and year, 2010-2024. Darker colors represent a higher volume of complaints/reports."
 dv_plot_data <- aggregated_dv_data %>%
   group_by(Year, Borough) %>%
   summarise(total_reports = sum(`DV Reports`))
@@ -2493,11 +2753,27 @@ p2<- ggplot(mold_plot_data, aes(x = Year, y = Borough, fill = total_complaints))
 p1 + p2
 ```
 
+## Correlation Plot: Totals by Borough
+
+```{r}
+#| label: corrplot1
+#| echo: false
+#| fig-cap: "Figure 2. A scatterplot representing a positive correlation between total mold complaints and DV reports, grouped by borough."
+ggplot(aggregated_dv_mold_data, aes(x = `Mold Complaints`, y = `DV Reports`, color = Borough)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "lm", se = FALSE, color = "gray18") +
+  labs(title = "DV Reports vs Mold Complaints by Borough",
+       x = "Mold Complaints",
+       y = "DV Reports") +
+  theme_minimal()
+```
+
 ## Exploratory Analysis: Temporal Trends by Borough
 
 ```{r}
-#| label: fig-trends
+#| label: trends
 #| echo: false
+#| fig-cap: "Figure 3. Line plots representing monthly DV reports & mold complaints by borough, 2010-2024."
 plot_data <- aggregated_dv_mold_data %>%
   pivot_longer(
     cols = c(`DV Reports`, `Mold Complaints`),
@@ -2520,47 +2796,36 @@ ggplot(plot_data, aes(x = time_index, y = Count, color = Type)) +
   )
 ```
 
-## Correlation Plot: Totals by Borough
-
-```{r}
-#| label: fig-corrplot1
-#| echo: false
-ggplot(aggregated_dv_mold_data, aes(x = `Mold Complaints`, y = `DV Reports`, color = Borough)) +
-  geom_point(alpha = 0.5) +
-  geom_smooth(method = "lm", se = FALSE, color = "gray18") +
-  labs(title = "DV Reports vs Mold Complaints by Borough",
-       x = "Mold Complaints",
-       y = "DV Reports") +
-  theme_minimal()
-```
-
-## Correlation Test: DV Reports \~ Mold Complaints
+## Correlation Test: DV Reports \~ Mold Complaints (Month to Month)
 
 ```{r}
 #| label: corr
 #| echo: false
-cor.test(aggregated_dv_mold_data$`DV Reports`, 
-         aggregated_dv_mold_data$`Mold Complaints`)
+cor.test(monthly_counts$total_dv, monthly_counts$total_mold)
 ```
+
+-   [**r = 0.36**]{style="color: #994C99;"}
+-   [***p*** **\< 0.001**]{style="color: #994C99;"}
 
 ## Correlation Plot: Lagged Data
 
 ```{r}
-#| label: fig-corrplot2
+#| label: corrplot2
 #| echo: false
+#| fig-cap: "Figure 4. A scatterplot representing a positive correlation between current-month mold complaints and DV reports 3 months later."
 dv_mold_lagged <- aggregated_dv_mold_data %>%
   arrange(Borough, time_index) %>%
   group_by(Borough) %>%
-  mutate(DV_next_month = lead(`DV Reports`, n = 1)) %>%
+  mutate(DV_3_month = lead(`DV Reports`, n = 3)) %>%
   ungroup()
 
-ggplot(dv_mold_lagged, aes(x = `Mold Complaints`, y = DV_next_month)) +
+ggplot(dv_mold_lagged, aes(x = `Mold Complaints`, y = DV_3_month)) +
   geom_point(alpha = 0.5, color = "darkgreen") +
   geom_smooth(method = "lm", color = "darkred") +
   labs(
-    title = "Next Month DV Reports vs Current Month Mold Complaints",
+    title = "Current Month Mold Complaints vs. DV Reports Three Months Later",
     x = "Mold Complaints (Current Month)",
-    y = "DV Reports (Next Month)"
+    y = "DV Reports (Three Months Later)"
   ) +
   theme_minimal()
 ```
@@ -2570,47 +2835,38 @@ ggplot(dv_mold_lagged, aes(x = `Mold Complaints`, y = DV_next_month)) +
 ```{r}
 #| label: corr2
 #| echo: false
-cor.test(dv_mold_lagged$DV_next_month, dv_mold_lagged$`Mold Complaints`)
+#| output: hide
+borough_results <- dv_mold_lagged %>%
+     group_by(Borough) %>%
+     dplyr::summarize(
+         lag_cor = cor(`Mold Complaints`, DV_3_month, use = "complete.obs")
+     )
 ```
+
+### Current Month Mold Complaints \~ DV Reports 3 Months Later
+
+-   [**r = 0.25**]{style="color: #994C99;"}
+-   [***p*** **\< 0.001**]{style="color: #994C99;"}
 
 ## Regression Models
 
-DV Reports \~ Mold Complaints + Borough
+| Linear Regression Model | $R^2$ | *p*-value | AIC |
+|:------------------|:----------------:|:----------------:|:----------------:|
+| [Mold \~ DV + Borough]{.fragment data-fragment-index="1"} | [0.94]{.fragment data-fragment-index="1"} | [\< 0.001]{.fragment data-fragment-index="1"} | [10571.03]{.fragment data-fragment-index="1"} |
+| [Mold \~ DV + Borough +]{.fragment data-fragment-index="2"}[**Avg. Resolution Days**]{style="color: #994C99;"} | [0.95]{.fragment data-fragment-index="2"} | [\< 0.001]{.fragment data-fragment-index="2"} | [**10524.65**]{style="color: #994C99;"} |
+| [Mold \~]{.fragment data-fragment-index="3"}[**DV (3 Months Later)**]{style="color: #994C99;"} + Borough | [0.94]{.fragment data-fragment-index="3"} | [\< 0.001]{.fragment data-fragment-index="3"} | [**10390.65**]{style="color: #994C99;"} |
 
-```{r}
-#| label: reg
-#| echo: false
-lm_borough <- lm(
-  `DV Reports` ~ `Mold Complaints` + Borough,
-  data = aggregated_dv_mold_data
-)
+## Key Findings & Takeaways {#sec-key-findings--takeaways}
 
-summary(lm_borough)
-AIC(lm_borough)
-```
+-   Housing distress 🔗 Domestic instability
+-   Predictive power of [**both models**]{style="color: #994C99;"}
+    -   Response speed
+    -   3-month lag
+-   [**Proactive**]{style="color: #994C99;"} roadmap for NYC agencies
+    -   NYC Housing Authority
+    -   NYC Department of Health & Mental Hygiene
 
-## Regression Models
-
-DV Reports \~ Mold Complaints + Borough + Average Mold Resolution Days
-
-```{r}
-aggregated_dv_mold_data <- aggregated_dv_mold_data %>%
-  left_join(mold_monthly_resolution, by = c("Year", "Month"))
-
-lm_resolution_borough <- lm(
-  `DV Reports` ~ `Mold Complaints` + Borough + avg_resolution_days,
-  data = aggregated_dv_mold_data
-)
-
-summary(lm_resolution_borough)
-AIC(lm_resolution_borough)
-```
-
-## Key Findings
-
--   Consistent positive association
--   Regression model is still significant when accounting for borough differences (though weaker)
--   Lagged analyses were very similar to non-lagged results
+[**Full Project: *https://rpubs.com/shannonjoyce/toxichomes***]{style="color: #994C99;"}
 
 ------------------------------------------------------------------------
 
@@ -2818,7 +3074,7 @@ Questions?
 
 ## Xinru Wang
 
-### Beating Around the Bush
+### Beating Around the Bush: Urban Trees and Wildlife Patterns in New York City
 
 ## Urban Wildlife in NYC
 
