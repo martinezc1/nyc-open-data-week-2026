@@ -311,18 +311,6 @@ knitr::kable(
   caption = "Number of Events Per CD"
 )
 
-events_cd %>%
-  slice_max(n_events, n = 25) %>%
-  ggplot(aes(x = reorder(cd_id, n_events), y = n_events)) +
-  geom_col(fill = "steelblue") +
-  coord_flip() +
-  labs(
-    title = "Number of Events by Community District (Top 25)",
-    x = "Community District",
-    y = "Number of Events"
-  ) +
-  theme_minimal()
-
 BoroReport <- BoroReport %>%
   mutate(
     bc_snap_recipients = as.numeric(bc_snap_recipients)
@@ -340,7 +328,19 @@ snap_plot_data <- BoroReport %>%
 #| label: fig-snap-plot-data
 #| echo: false
 
-snap_plot_data %>%
+event_plot <- events_cd %>%
+  slice_max(n_events, n = 25) %>%
+  ggplot(aes(x = reorder(cd_id, n_events), y = n_events)) +
+  geom_col(fill = "steelblue") +
+  coord_flip() +
+  labs(
+    title = "Number of Events by Community District (Top 25)",
+    x = "Community District",
+    y = "Number of Events"
+  ) +
+  theme_minimal()
+
+snap_plot <- snap_plot_data %>%
   slice_max(bc_snap_recipients, n = 25) %>%
   ggplot(
     aes(
@@ -356,7 +356,9 @@ snap_plot_data %>%
     y = "SNAP Recipients"
   ) +
   theme_minimal()
-
+library(patchwork)
+event_plot + plot_spacer() + snap_plot +
+  plot_layout(widths = c(1, 0.1, 1))
 ```
 
 ```{r}
@@ -1582,6 +1584,64 @@ The narrative: MSG uniquely influences players' performances under its bright li
 -   **Key metrics:** Points, True Shooting % (TS%), Turnovers, Offensive Output (PTS + REB + AST), Defensive Output (STL + BLK)
 -   **Player analyses** excludes Knicks players home games; MSG data reflects **visiting teams only**
 -   Comparisons use independent samples *t*-tests
+
+## Q1: Knicks Home-Court Advantage {background-color="#1a1a2e"}
+
+::::: columns
+::: {.column width="58%"}
+```{r q1-plot}
+non_nba_teams <- c("EAST", "WEST", "USA", "WORLD", "GIA", "LEB")
+knicks_abbrevs <- c("NY", "NYK")
+
+team_home_advantage <- pb |>
+  filter(!did_not_play, minutes > 0, !team_abbreviation %in% non_nba_teams) |>
+  group_by(game_id, team_abbreviation, home_away) |>
+  summarise(team_points = sum(points, na.rm = TRUE), .groups = "drop") |>
+  group_by(team_abbreviation, home_away) |>
+  summarise(avg_points = mean(team_points, na.rm = TRUE), .groups = "drop") |>
+  pivot_wider(names_from = home_away, values_from = avg_points) |>
+  mutate(home_court_advantage = home - away) |>
+  semi_join(nba_abbrevs, by = "team_abbreviation") |>
+  mutate(
+    is_knicks = team_abbreviation %in% knicks_abbrevs,
+    rank = rank(desc(home_court_advantage))
+  ) |>
+  arrange(desc(home_court_advantage))
+
+knicks_rank <- team_home_advantage |> filter(is_knicks) |> pull(rank)
+
+ggplot(team_home_advantage,
+       aes(x = reorder(team_abbreviation, home_court_advantage),
+           y = home_court_advantage,
+           fill = is_knicks)) +
+  geom_col(width = 0.8) +
+  geom_hline(yintercept = mean(team_home_advantage$home_court_advantage), 
+           linetype = "dotted", color = "grey", linewidth = 0.8) +
+  annotate("text", 
+         x = 1, 
+         y = mean(team_home_advantage$home_court_advantage),
+         label = paste0("Avg: ", round(mean(team_home_advantage$home_court_advantage), 1)),
+         hjust = -0, color = "grey", size = 3) +
+  scale_fill_manual(values = c("FALSE" = "#4a4a6a", "TRUE" = "#f7941d")) +
+  coord_flip() +
+  labs(
+    title = "Home-Court Advantage by Team (2002–Present)",
+    subtitle = "Knicks (orange) rank 23rd out of 30 teams",
+    x = NULL, y = "Avg Points Scored: Home − Away"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(legend.position = "none",
+        plot.title = element_text(face = "bold"),
+        axis.text.y = element_text(size = 8))
+```
+:::
+
+::: {.column width="42%"}
+-   The Knicks rank **23rd** out of 32 teams in home-court scoring advantage
+-   Bottom 1/3 of the league.
+-   MSG as a home-court may actually be more of a detriment than a benefit.
+:::
+:::::
 
 ## Q2: Visiting Player Performance at MSG {background-color="#1a1a2e"}
 
@@ -2851,10 +2911,10 @@ borough_results <- dv_mold_lagged %>%
 ## Regression Models
 
 | Linear Regression Model | $R^2$ | *p*-value | AIC |
-|:------------------|:----------------:|:----------------:|:----------------:|
-| [Mold \~ DV + Borough]{.fragment data-fragment-index="1"} | [0.94]{.fragment data-fragment-index="1"} | [\< 0.001]{.fragment data-fragment-index="1"} | [10571.03]{.fragment data-fragment-index="1"} |
-| [Mold \~ DV + Borough +]{.fragment data-fragment-index="2"}[**Avg. Resolution Days**]{style="color: #994C99;"} | [0.95]{.fragment data-fragment-index="2"} | [\< 0.001]{.fragment data-fragment-index="2"} | [**10524.65**]{style="color: #994C99;"} |
-| [Mold \~]{.fragment data-fragment-index="3"}[**DV (3 Months Later)**]{style="color: #994C99;"} + Borough | [0.94]{.fragment data-fragment-index="3"} | [\< 0.001]{.fragment data-fragment-index="3"} | [**10390.65**]{style="color: #994C99;"} |
+|:-------------------|:----------------:|:----------------:|:----------------:|
+| Mold \~ DV + Borough | 0.94 | \< 0.001 | 10571.03 |
+| Mold \~ DV + Borough + [<strong>Avg. Resolution Days</strong>]{style="color:#994C99;"} | 0.95 | \< 0.001 | [<strong>10524.65</strong>]{style="color:#994C99;"} |
+| Mold \~ [<strong>DV (3 Months Later)</strong>]{style="color:#994C99;"} + Borough | 0.94 | \< 0.001 | [<strong>10390.65</strong>]{style="color:#994C99;"} |
 
 ## Key Findings & Takeaways {#sec-key-findings--takeaways}
 
